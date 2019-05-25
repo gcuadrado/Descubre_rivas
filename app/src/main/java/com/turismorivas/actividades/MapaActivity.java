@@ -48,9 +48,12 @@ import com.turismorivas.modelo.PuenteDelTrenDeArganda;
 import com.turismorivas.modelo.PuentedeArganda;
 import com.turismorivas.modelo.PuntoDeInteres;
 import com.turismorivas.modelo.Trincheras;
+import com.turismorivas.modelo.TrincherasLagunaCampillo;
 import com.turismorivas.modelo.YacimientoArqueologicoMiralrio;
 import com.turismorivas.util.Constantes;
-import com.turismorivas.util.CustomInfoWindowAdapter;
+
+import com.turismorivas.util.CustomInfoWindowGoogleMap;
+import com.turismorivas.util.InfoWindowData;
 import com.turismorivas.util.PreferencesUsuario;
 
 /**
@@ -223,7 +226,11 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
             opciones_marcador.position(posicion);
             opciones_marcador.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_rivas));
             m = googleMap.addMarker(opciones_marcador);
-            m.setTag(i);
+            InfoWindowData info=new InfoWindowData();
+            info.setNum_punto(i);
+            info.setNombre_punto(lpuntoDeInteres.get(i).getNombre());
+            m.setTag(info);
+            m.showInfoWindow();
             MapaActivity.lista_marcadores.add(m);//Guardo la lista de marcadores para luego poder recurrir a ella cuando tenga que referirme a un marcador desde su selección en el menú lateral
 
         }
@@ -268,6 +275,7 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
         lpi.add(new PuenteDelTrenDeArganda());
         lpi.add(new Trincheras());
         lpi.add(new YacimientoArqueologicoMiralrio());
+        lpi.add(new TrincherasLagunaCampillo());
 
 
         return lpi;
@@ -286,17 +294,20 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         centrar_mapa(googleMap);//centramos la cámara
         lpi = obtenerListaPuntosDeInteres();//obtenemos los puntos de interés, con sus respectiva descripción
+        CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(this);
+        googleMap.setInfoWindowAdapter(customInfoWindow);
         marcarPuntos(lpi, googleMap);//señalamos los puntos en el mapa
 
         //asginamos el listener para cuando la información mostrada por el marcador sea tocada (cartelito con el nombre)
         this.googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                int npi = (int) marker.getTag();//obtenemos el número de punto de interés
+                InfoWindowData info=(InfoWindowData)marker.getTag();
+                int npi = (int)info.getNum_punto();//obtenemos el número de punto de interés
                 Log.d(Constantes.TAG_APP, "NPI seleccionado = " + npi);//transitamos a la actividad que muestra el detalle
                 Intent i = new Intent(getBaseContext(), PuntoDeInteresActivity.class);//con un intent explícito
-                Intent p=new Intent(getBaseContext(), CustomInfoWindowAdapter.class);
-                p.putExtra(Constantes.CLAVE_INTENT_PI,npi);
+
+
                 i.putExtra(Constantes.CLAVE_INTENT_PI, npi);
                 startActivity(i);
 
