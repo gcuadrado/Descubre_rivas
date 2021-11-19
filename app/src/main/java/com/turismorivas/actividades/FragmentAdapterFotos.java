@@ -1,19 +1,21 @@
 package com.turismorivas.actividades;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 
-import com.turismorivas.R;
 import com.turismorivas.modelo.PuntoDeInteres;
+
+import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 /**
  * @author vale
  * @since 2-8-18
  * @see {@link GaleriaFragment}, {@link FotoDetailFragment}
  *
- * Es el marco que va proporcinando fotos al GaleriaFragement, almacennado para ello
+ * Es el marco que va proporcinando path_fotos al GaleriaFragement, almacennado para ello
  * la referencia a la colección de imágenes relativa al punto de interés en curso.
  * Emplea la clase FotoFragmentDeatil, para propicionar las vistas que se rendrizan en la Galeria
  */
@@ -21,7 +23,7 @@ import com.turismorivas.modelo.PuntoDeInteres;
 public class FragmentAdapterFotos extends FragmentStatePagerAdapter {
 
 
-    private int [] array_fotos_actual ;
+    private List<String> array_fotos_actual ;
 
     public FragmentAdapterFotos (FragmentManager fm)
     {
@@ -31,7 +33,7 @@ public class FragmentAdapterFotos extends FragmentStatePagerAdapter {
 
     public void setPuntoDeInteres(PuntoDeInteres pi)
     {
-        array_fotos_actual = pi.getFotos();
+        array_fotos_actual = pi.getPath_fotos();
 
     }
     @Override
@@ -40,9 +42,14 @@ public class FragmentAdapterFotos extends FragmentStatePagerAdapter {
         Bundle bundle = null;
 
         fragment = new FotoDetailFragment();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        /*array_fotos_actual[i].compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();*/
+
         bundle = new Bundle();
 
-        bundle.putInt("N_FOTO", array_fotos_actual[i]);//al fragment le damos un tag, que valdrá a la postre para la id del la foto en curso
+        //bundle.putByteArray("N_FOTO", byteArray);//al fragment le damos un tag, que valdrá a la postre para la id del la foto en curso
+        fragment.setPath_foto(array_fotos_actual.get(i));
         fragment.setArguments(bundle);
 
 
@@ -53,7 +60,7 @@ public class FragmentAdapterFotos extends FragmentStatePagerAdapter {
     public int getCount() {
         int tamanio = 0;
 
-        tamanio = array_fotos_actual.length;
+        tamanio = array_fotos_actual.size();
 
         return tamanio;
     }

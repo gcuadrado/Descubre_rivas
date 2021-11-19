@@ -94,7 +94,7 @@
 
                     <Button
                         android:onClick="sacarInfoDetalle"
-
+                        android:id="@+id/mostrarMasInfo"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Más información"
@@ -120,26 +120,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:layout_marginTop="15dp">
-                <LinearLayout
-                    android:id="@+id/linearnombre"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <TextView
-                        android:id="@+id/textviewnombre"
-                        android:textStyle="bold"
-                        android:layout_width="0dp"
-                        android:layout_weight="4"
-                        android:layout_height="match_parent"
-                        android:text="@string/nombre"
-                        android:padding="3dp"/>
-                    <TextView
-                        android:id="@+id/detalles_nombre"
-                        android:layout_width="0dp"
-                        android:layout_weight="6"
-                        android:layout_height="wrap_content"
-                        android:padding="3dp"/>
 
-                </LinearLayout>
                 <LinearLayout
                     android:id="@+id/linearfecha"
                     android:layout_width="match_parent"
@@ -183,27 +164,6 @@
                         android:padding="3dp"/>
                 </LinearLayout>
                 <LinearLayout
-                    android:id="@+id/lineararea"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:id="@+id/textviewarea"
-                        android:textStyle="bold"
-                        android:layout_width="0dp"
-                        android:layout_weight="4"
-                        android:layout_height="match_parent"
-                        android:text="@string/area"
-                        android:padding="3dp"/>
-                    <TextView
-                        android:id="@+id/detalles_area"
-                        android:layout_width="0dp"
-                        android:layout_weight="6"
-                        android:layout_height="wrap_content"
-                        android:padding="3dp"/>
-
-                </LinearLayout>
-                <LinearLayout
                     android:id="@+id/lineardireccion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -224,48 +184,7 @@
                         android:padding="3dp"/>
 
                 </LinearLayout>
-                <LinearLayout
-                    android:id="@+id/linearlatitud"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:id="@+id/textviewlatitud"
-                        android:textStyle="bold"
-                        android:layout_width="0dp"
-                        android:layout_weight="4"
-                        android:layout_height="match_parent"
-                        android:text="@string/latitud"
-                        android:padding="3dp"/>
-                    <TextView
-                        android:id="@+id/detalles_latitud"
-                        android:layout_width="0dp"
-                        android:layout_weight="6"
-                        android:layout_height="wrap_content"
-                        android:padding="3dp"/>
 
-                </LinearLayout>
-                <LinearLayout
-                    android:id="@+id/linearlongitud"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:id="@+id/textviewlongitud"
-                        android:textStyle="bold"
-                        android:layout_width="0dp"
-                        android:layout_weight="4"
-                        android:layout_height="match_parent"
-                        android:text="@string/longitud"
-                        android:padding="3dp"/>
-                    <TextView
-                        android:id="@+id/detalles_longitud"
-                        android:layout_width="0dp"
-                        android:layout_weight="6"
-                        android:layout_height="wrap_content"
-                        android:padding="3dp"/>
-
-                </LinearLayout>
                 <LinearLayout
                     android:id="@+id/linearaccesibilidad"
                     android:layout_width="match_parent"

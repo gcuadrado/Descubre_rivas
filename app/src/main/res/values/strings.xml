@@ -98,6 +98,8 @@
     <string name="hibrido">Híbrido</string>
     <string name="normal">Normal</string>
     <string name="satelite">Satélite</string>
+    <string name="pedirLocalizacion">Vamos a pedirte acceso a tu localización para que puedas encontrar todos los lugares
+    de interes de forma más fácil. Si no quieres aceptar !No pasa nada! la aplicación seguirá funcionando.</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

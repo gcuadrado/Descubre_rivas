@@ -1,22 +1,36 @@
 package com.turismorivas.actividades;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
-import android.support.design.widget.NavigationView;
+import android.os.Build;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import com.google.android.material.navigation.NavigationView;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
+import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.widget.Button;
+import android.widget.FrameLayout;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -29,27 +43,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import com.turismorivas.R;
 import com.turismorivas.listener.MenuNavListener;
-import com.turismorivas.modelo.AuditorioMiguelRios;
-import com.turismorivas.modelo.AytoRivas;
-import com.turismorivas.modelo.CastilloDeRivas;
-import com.turismorivas.modelo.CuevasDeLaGuerraCivil;
-import com.turismorivas.modelo.ErmitaDelCristo;
-import com.turismorivas.modelo.FincaElPorcal;
-import com.turismorivas.modelo.LagunaDelCampillo;
-import com.turismorivas.modelo.MonumentoMartiresVaciamadrid;
-import com.turismorivas.modelo.ParqueLineal;
-import com.turismorivas.modelo.ParroquiaSanMarcos;
-import com.turismorivas.modelo.ParroquiaSantaMonica;
-import com.turismorivas.modelo.Piruli;
-import com.turismorivas.modelo.PuenteDelTrenDeArganda;
-import com.turismorivas.modelo.PuentedeArganda;
 import com.turismorivas.modelo.PuntoDeInteres;
-import com.turismorivas.modelo.Trincheras;
-import com.turismorivas.modelo.TrincherasLagunaCampillo;
-import com.turismorivas.modelo.YacimientoArqueologicoMiralrio;
+import com.turismorivas.servicios.DescargarFotos;
+import com.turismorivas.servicios.GetPuntosInteres;
 import com.turismorivas.util.Constantes;
 
 import com.turismorivas.util.CustomInfoWindowGoogleMap;
@@ -74,12 +75,12 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final static LatLng POSICION_INICIO = new LatLng(40.351906, -3.535733);//POSICIÓN GEOGRÁFICA DE RIVAS
     private final static float NIVEL_ZOOM = 13;//NIVEL DE PROXIMIDAD DE LA CÁMARA DEL MAPA
 
-    private GoogleMap googleMap;//el mapa propiamente dicho
-    private static List<PuntoDeInteres> lpi;//listado de puntos de interés
+    private GoogleMap googleMap_global;//el mapa propiamente dicho
+    private static Map<String,PuntoDeInteres> lpi;//listado de puntos de interés
     private DrawerLayout drawerLayout;//el menú lateral
     private boolean menu_visible;//para gestionar si está visible o no el menú lateral
 
-    private static List<Marker> lista_marcadores;//lista que almacena los marcadores del mapa, para que desde el menú lateral, cuando se pulse un nombre, se pueda ir a ese marcador (centrar el mapa en él y mostrar su cartelito)
+    private static Map<String,Marker> lista_marcadores;//lista que almacena los marcadores del mapa, para que desde el menú lateral, cuando se pulse un nombre, se pueda ir a ese marcador (centrar el mapa en él y mostrar su cartelito)
 
 
     @Override
@@ -97,6 +98,8 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //asignamos listener del menú lateral
             drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            
             NavigationView navigationView = (NavigationView) findViewById(R.id.navview);
             navigationView.setNavigationItemSelectedListener(new MenuNavListener(this));
 
@@ -190,13 +193,13 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Método que permite obtener un Punto de Interés por su id (posición en la lista en realidad)
      *
-     * @param i el id del punto de interés
+     * @param nombre el id del punto de interés
      * @return el punto de interés i-ésimo
      */
-    public static PuntoDeInteres getPuntoDeInteres(int i) {
+    public static PuntoDeInteres getPuntoDeInteres(String nombre) {
         PuntoDeInteres pi = null;
 
-        pi = lpi.get(i);
+        pi = lpi.get(nombre);
 
         return pi;
     }
@@ -211,29 +214,43 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param lpuntoDeInteres la lista de puntos con la info de cada punto
      * @param googleMap       el mapa donde se dibuja
      */
-    public static void marcarPuntos(List<PuntoDeInteres> lpuntoDeInteres, GoogleMap googleMap) {
+    public  void marcarPuntos(Map<String,PuntoDeInteres> lpuntoDeInteres, GoogleMap googleMap) {
+
         Marker m = null;
         MarkerOptions opciones_marcador = null;
         LatLng posicion = null;
-
-        MapaActivity.lista_marcadores = new ArrayList<Marker>();//para almacenar los marersy luego poder refrenciarlos tras clickar el menú lateral
-
-        for (int i = 0; i < lpuntoDeInteres.size(); i++) {
+        NavigationView navView = (NavigationView) findViewById(R.id.navview);
+        Menu menu = navView.getMenu();
+        SubMenu subMenu=menu.addSubMenu("Puntos de interés");
+       this.lista_marcadores = new TreeMap<>();//para almacenar los marersy luego poder refrenciarlos tras clickar el menú lateral
+if(lpuntoDeInteres!=null){
+        for (PuntoDeInteres puntoDeInteres : lpuntoDeInteres.values()) {
 
             opciones_marcador = new MarkerOptions();
-            opciones_marcador.title(lpuntoDeInteres.get(i).getNombre());
-            posicion = new LatLng(lpuntoDeInteres.get(i).getLatitud(), lpuntoDeInteres.get(i).getLongitud());
+            opciones_marcador.title(puntoDeInteres.getNombre());
+            posicion = new LatLng(puntoDeInteres.getLatitud(), puntoDeInteres.getLongitud());
             opciones_marcador.position(posicion);
-            opciones_marcador.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_rivas));
+            int icono;
+            if (puntoDeInteres.getCategoria() == PuntoDeInteres.CATEGORIA.MISTERIO) {
+                icono = R.drawable.geo_icono;
+            } else {
+                icono = R.drawable.marker_rivas;
+            }
+            opciones_marcador.icon(BitmapDescriptorFactory.fromResource(icono));
             m = googleMap.addMarker(opciones_marcador);
-            InfoWindowData info=new InfoWindowData();
-            info.setNum_punto(i);
-            info.setNombre_punto(lpuntoDeInteres.get(i).getNombre());
-            m.setTag(info);
-            m.showInfoWindow();
-            MapaActivity.lista_marcadores.add(m);//Guardo la lista de marcadores para luego poder recurrir a ella cuando tenga que referirme a un marcador desde su selección en el menú lateral
-
+            InfoWindowData info = new InfoWindowData();
+            info.setNum_punto(puntoDeInteres.getId());
+            info.setNombre_punto(puntoDeInteres.getNombre());
+            m.setTag(puntoDeInteres);
+            subMenu.add(puntoDeInteres.getNombre());
+            //m.showInfoWindow();
+            this.lista_marcadores.put(m.getTitle(), m);//Guardo la lista de marcadores para luego poder recurrir a ella cuando tenga que referirme a un marcador desde su selección en el menú lateral
         }
+        }
+    }
+
+    public void añadirPuntosNav(){
+
     }
 
     /**
@@ -244,7 +261,7 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static void centrar_mapa(GoogleMap googleMap) {
         googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(POSICION_INICIO, NIVEL_ZOOM));
-        
+
 
     }
 
@@ -259,23 +276,6 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
         List<PuntoDeInteres> lpi = null;
 
         lpi = new ArrayList<PuntoDeInteres>(NUM_PUNTOS_INTERES);
-        lpi.add(new AuditorioMiguelRios());
-        lpi.add(new AytoRivas());
-        lpi.add(new CastilloDeRivas());
-        lpi.add(new CuevasDeLaGuerraCivil());
-        lpi.add(new ErmitaDelCristo());
-        lpi.add(new FincaElPorcal());
-        lpi.add(new LagunaDelCampillo());
-        lpi.add(new MonumentoMartiresVaciamadrid());
-        lpi.add(new ParqueLineal());
-        lpi.add(new ParroquiaSanMarcos());
-        lpi.add(new ParroquiaSantaMonica());
-        lpi.add(new Piruli());
-        lpi.add(new PuentedeArganda());
-        lpi.add(new PuenteDelTrenDeArganda());
-        lpi.add(new Trincheras());
-        lpi.add(new YacimientoArqueologicoMiralrio());
-        lpi.add(new TrincherasLagunaCampillo());
 
 
         return lpi;
@@ -289,40 +289,139 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param googleMap la variable que represeta el mapa
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        this.googleMap = googleMap;
+    public void onMapReady(final GoogleMap googleMap) {
+        this.googleMap_global = googleMap;
 
         centrar_mapa(googleMap);//centramos la cámara
-        lpi = obtenerListaPuntosDeInteres();//obtenemos los puntos de interés, con sus respectiva descripción
         CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(this);
         googleMap.setInfoWindowAdapter(customInfoWindow);
-        marcarPuntos(lpi, googleMap);//señalamos los puntos en el mapa
-
         //asginamos el listener para cuando la información mostrada por el marcador sea tocada (cartelito con el nombre)
-        this.googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+        this.googleMap_global.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                InfoWindowData info=(InfoWindowData)marker.getTag();
-                int npi = (int)info.getNum_punto();//obtenemos el número de punto de interés
-                Log.d(Constantes.TAG_APP, "NPI seleccionado = " + npi);//transitamos a la actividad que muestra el detalle
+                PuntoDeInteres p = (PuntoDeInteres) marker.getTag();
+                String nombre = p.getNombre();//obtenemos el número de punto de interés
                 Intent i = new Intent(getBaseContext(), PuntoDeInteresActivity.class);//con un intent explícito
 
 
-                i.putExtra(Constantes.CLAVE_INTENT_PI, npi);
+                i.putExtra(Constantes.CLAVE_INTENT_PI, nombre);
                 startActivity(i);
 
             }
         })
         ;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            pedirPermisoLocalizacion();
+        }
+
+        googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+            @Override
+            public boolean onMyLocationButtonClick() {
+                //TODO: Any custom actions
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    pedirPermisoLocalizacion();
+                }
+                return false;
+            }
+        });
+
+
+        descargarPuntos();
+        //señalamos los puntos en el mapa
+
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void pedirPermisoLocalizacion() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+            requestPermissions(permissions, Constantes.CODIGO_SOLICITUD_PERMISO_LOCALIZACIÓN);
+        }else{
+            googleMap_global.setMyLocationEnabled(true);
+        }
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == Constantes.CODIGO_SOLICITUD_PERMISO_LOCALIZACIÓN) {
+
+            boolean concecido = false;
+            for (int i = 0; i < permissions.length; i++) {
+                String permission = permissions[i];
+                int grantResult = grantResults[i];
+
+                if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION) || permission.equals(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                        concecido = true;
+                    } else {
+                        concecido = false;
+                    }
+                }
+            }
+
+            if (concecido) {
+
+                pedirPermisoLocalizacion();
+            }
+        }
+    }
+
+    private void descargarPuntos(){
+        if(isNetwork(this)) {
+            GetPuntosInteres getPuntosInteres = new GetPuntosInteres() {
+                protected void onPostExecute(Map<String,PuntoDeInteres> puntos) {
+                    lpi = puntos;
+
+                    if(lpi!=null) {
+                        if (!lpi.isEmpty()) {
+                            DescargarFotos descargarFotos=new DescargarFotos(MapaActivity.this);
+                            descargarFotos.execute(lpi);
+                            marcarPuntos(lpi, googleMap_global);
+
+                        }
+                    }else{
+                        lpi=PreferencesUsuario.getPuntosInteres(MapaActivity.this);
+                        marcarPuntos(lpi, googleMap_global);
+                    }
+
+                    FrameLayout progressBarHolder = (FrameLayout) findViewById(R.id.progressBarHolder);
+                    AlphaAnimation outAnimation = new AlphaAnimation(1f, 0f);
+                    outAnimation.setDuration(200);
+                    progressBarHolder.setAnimation(outAnimation);
+                    progressBarHolder.setVisibility(View.GONE);
+
+                }
+            };
+            //Iniciar animación de espera
+            FrameLayout progressBarHolder = (FrameLayout) findViewById(R.id.progressBarHolder);
+            AlphaAnimation inAnimation = new AlphaAnimation(0f, 1f);
+            inAnimation.setDuration(200);
+            progressBarHolder.setAnimation(inAnimation);
+            progressBarHolder.setVisibility(View.VISIBLE);
+            try {
+                getPuntosInteres.execute(this);//obtenemos los puntos de interés, con sus respectiva descripción
+            } catch (Exception e) {
+
+            }
+        }else {
+            lpi=PreferencesUsuario.getPuntosInteres(MapaActivity.this);
+            marcarPuntos(lpi, googleMap_global);
+        }
+
     }
 
     /**
      * Este método es invocado cuando un punto de interés ha sido seleccinado desde el menú lateral
      * Lo que hace el método es centrar el mapa en ese punto y mostrar el letrero correspondiente a ese marcador
      *
-     * @param id_marker el id del marcador
+     * @param nombre_punto el id del marcador
      */
-    public void visitaPuntoDeInteres(int id_marker) {
+    public void visitaPuntoDeInteres(String nombre_punto) {
 
         //NOTA: Posible mejora: informar al usuario con un diálogo que toque el nombre del sitio para acceder a la ficha
         //NOTA 2: Al simular nosotros que se ha tocado el marker, se enfoca la cámara y se dibuja el letrero de información,
@@ -331,9 +430,10 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
         //Debate en foro sin solución aparente https://stackoverflow.com/questions/29801193/how-to-trigger-the-onclick-event-of-a-marker-on-a-google-maps-v2-for-android#comment57351853_31156994
 
         drawerLayout.closeDrawers();//cierre del menú lateral
-        Marker m = lista_marcadores.get(id_marker);
+        Marker m = lista_marcadores.get(nombre_punto);
+
         m.showInfoWindow();
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), NIVEL_ZOOM));
+        googleMap_global.moveCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), NIVEL_ZOOM));
         menu_visible = false;
     }
 
@@ -346,21 +446,9 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     public void cambiarTipoMapa(int tipo_mapa) {
 
-        int n_t_mapa = -1;
 
-        switch (tipo_mapa) {
-            case 16:
-                n_t_mapa = GoogleMap.MAP_TYPE_HYBRID;
-                break;
-            case 17:
-                n_t_mapa = GoogleMap.MAP_TYPE_NORMAL;
-                break;
-            case 18:
-                n_t_mapa = GoogleMap.MAP_TYPE_SATELLITE;
-                break;
-        }
         drawerLayout.closeDrawers();//cierre del menú
-        googleMap.setMapType(n_t_mapa);
+        googleMap_global.setMapType(tipo_mapa);
 
     }
 
@@ -381,5 +469,13 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
         List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
         return list.size() > 0;
 
+    }
+
+    public  boolean isNetwork(Context context) {
+
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

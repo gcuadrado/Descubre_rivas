@@ -1,8 +1,12 @@
 package com.turismorivas.actividades;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -42,20 +46,32 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("MIAPP","Dentro intent");
-        int npi = (int)getIntent().getIntExtra(Constantes.CLAVE_INTENT_PI, -1);
-        puntoDeInteres = MapaActivity.getPuntoDeInteres(npi);
+        String nombre = getIntent().getStringExtra(Constantes.CLAVE_INTENT_PI);
+        puntoDeInteres = MapaActivity.getPuntoDeInteres(nombre);
         Log.d(Constantes.TAG_APP, "NOMBRE pi = " + puntoDeInteres.getNombre());
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_punto_de_interes);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.atras);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        if(puntoDeInteres.getCategoria().equals(PuntoDeInteres.CATEGORIA.MISTERIO)){
+            cambiarColores(getResources().getString(R.color.amarilloMisterio));
+        }
 
         botonInformacion=false;
 
         rellenarTextviews(puntoDeInteres);
+    }
+
+    private void cambiarColores(String color){
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor(color)));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(Color.parseColor(color));
+        }
+        findViewById(R.id.mostrarMasInfo).setBackgroundColor(Color.parseColor(color));
     }
 
 
@@ -84,13 +100,9 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
     }
     //Este metodo rellena los textviews del documento xml
     public void rellenarTextviews(PuntoDeInteres punto_interes){
-        rellenarNombre(punto_interes);
         rellenarFecha(punto_interes);
-        rellenarArea(punto_interes);
         rellenarDireccion(punto_interes);
         rellenarAccesibilidad(punto_interes);
-        rellenarLatitud(punto_interes);
-        rellenarLongitud(punto_interes);
         rellenarInfocontacto(punto_interes);
         rellenarEnlaceweb(punto_interes);
 //        rellenarPuntuacion(punto_interes);
@@ -104,19 +116,13 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
     public void rellenarCategoria(PuntoDeInteres punto_interes){
         TextView text = null;
         String dato = "";
-        PuntoDeInteres.CATEGORIA categorias[] = punto_interes.getCategorias();
+        PuntoDeInteres.CATEGORIA categoria = punto_interes.getCategoria();
 
         text = findViewById(R.id.detalles_categoria);
-        if(categorias!=null) {
-            for (int i = 0; i < categorias.length; i++) {
-                if (i == categorias.length - 1)
-                    dato += categorias[i];
-                else
-                    dato += categorias[i] + " / ";
-            }
-            if (dato != "null") {
-                text.setText(dato);
-            }
+        if(categoria!=null) {
+
+                text.setText(categoria.toString());
+
         }else{
             LinearLayout li = findViewById(R.id.linearcategoria);
             li.setVisibility(View.GONE);
@@ -127,19 +133,7 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
 
     // Esto metodos rellenan los textviews (cada uno el suyo) del documento xml ademas se comprueba si el dato es null o no.
     //TODO rellenar los else, y borrar los layouts si estan vacios
-    public void rellenarNombre(PuntoDeInteres punto_interes){
-        TextView text;
-        String dato;
 
-        text = findViewById(R.id.detalles_nombre);
-        dato = punto_interes.getNombre();
-        if(dato!=null) {
-            text.setText(dato);
-        }else{
-            LinearLayout li = findViewById(R.id.linearnombre);
-            li.setVisibility(View.GONE);
-        }
-    }
 
     public void rellenarFecha(PuntoDeInteres punto_interes){
         TextView text;
@@ -147,7 +141,7 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
 
         text = findViewById(R.id.detalles_fecha);
         dato = punto_interes.getFecha_inicio();
-        if(dato!=null) {
+        if(dato!=null && !dato.equals("0000-00-00")) {
             text.setText(dato);
         }else{
             LinearLayout li = findViewById(R.id.linearfecha);
@@ -156,19 +150,7 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
 
     }
 
-    public void rellenarArea(PuntoDeInteres punto_interes){
-        TextView text;
-        String dato;
 
-        text = findViewById(R.id.detalles_area);
-        if(punto_interes.getArea()!=-1){
-            dato = punto_interes.getArea()+"m²";
-            text.setText(dato);
-        }else{
-            LinearLayout li = findViewById(R.id.lineararea);
-            li.setVisibility(View.GONE);
-        }
-    }
 
     public void rellenarDireccion(PuntoDeInteres punto_interes){
         TextView text;
@@ -176,7 +158,7 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
 
         text = findViewById(R.id.detalles_direccion);
         dato = punto_interes.getDireccion();
-        if(dato!=null){
+        if(dato!=null && !dato.equals("")){
             text.setText(dato);
         }else{
             LinearLayout li = findViewById(R.id.lineardireccion);
@@ -195,19 +177,7 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
         }
     }
 
-    public void rellenarLatitud(PuntoDeInteres punto_interes){
-        TextView text;
 
-        text = findViewById(R.id.detalles_latitud);
-        text.setText(punto_interes.getLatitud()+"");
-    }
-
-    public void rellenarLongitud(PuntoDeInteres punto_interes){
-        TextView text;
-
-        text = findViewById(R.id.detalles_longitud);
-        text.setText(punto_interes.getLongitud()+"");
-    }
 
     public void rellenarInfocontacto(PuntoDeInteres punto_interes){
         TextView text;
@@ -215,7 +185,7 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
 
         text = findViewById(R.id.detalles_infocontacto);
         dato = punto_interes.getInfo_contacto();
-        if(dato != null && dato != "") {
+        if(dato != null && !dato.equals("")) {
             text.setText(dato);
         }else{
             LinearLayout li = findViewById(R.id.linearinfocontacto);
@@ -229,7 +199,7 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
 
         text = findViewById(R.id.detalles_enlaceweb);
         dato = punto_interes.getEnlace_web();
-        if(dato != null){
+        if(dato != null && !dato.equals("")){
             dato = recortarEnlace(dato);
             text.setText(dato);
         }else{
@@ -245,7 +215,7 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
 
         text = findViewById(R.id.detalles_horario);
         dato = punto_interes.getHorario();
-        if(dato != null) {
+        if(dato != null && !dato.equals("")) {
             text.setText(dato);
         }else{
             LinearLayout li = findViewById(R.id.linearhorario);
@@ -323,23 +293,11 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
     public void mostrarPuntoInteres(PuntoDeInteres punto_interes){
         TextView text;
 
-        text = findViewById(R.id.detalles_nombre);
-        text.setText(punto_interes.getNombre());
-
         text = findViewById(R.id.detalles_fecha);
         text.setText(punto_interes.getFecha_inicio());
 
-        text = findViewById(R.id.detalles_area);
-        text.setText(punto_interes.getArea()+" m²");
-
         text = findViewById(R.id.detalles_direccion);
         text.setText(punto_interes.getDireccion());
-
-        text = findViewById(R.id.detalles_latitud);
-        text.setText(punto_interes.getLatitud()+"");
-
-        text = findViewById(R.id.detalles_longitud);
-        text.setText(punto_interes.getLongitud()+"");
 
         text = findViewById(R.id.detalles_accesibilidad);
         text.setText(punto_interes.isAccesibilidad()+"");
@@ -382,11 +340,17 @@ public class PuntoDeInteresActivity extends AppCompatActivity {
 
             botonInformacion=true;
         }else{
-            int rojoRivas=getResources().getColor(R.color.rojoRivas);
+            int colorBoton;
+            if(puntoDeInteres.getCategoria().equals(PuntoDeInteres.CATEGORIA.MISTERIO)){
+                colorBoton = getResources().getColor(R.color.amarilloMisterio);
+
+            }else {
+                colorBoton = getResources().getColor(R.color.rojoRivas);
+            }
             text.setText(puntoDeInteres.getInfo_basica());
 
             boton.setText("más información");
-            boton.setBackgroundColor(rojoRivas);
+            boton.setBackgroundColor(colorBoton);
 
             titulo.setText(R.string.info_basica);
             botonInformacion=false;

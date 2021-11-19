@@ -1,10 +1,10 @@
 package com.turismorivas.actividades;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.ViewPager;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager.widget.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +12,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.turismorivas.R;
+import com.turismorivas.modelo.PuntoDeInteres;
 import com.turismorivas.util.Constantes;
+
+import me.relex.circleindicator.CircleIndicator;
 
 /**
  * @author vale
@@ -47,8 +50,15 @@ public class GaleriaFragment extends Fragment {
 
         pagerAdapter.setPuntoDeInteres(PuntoDeInteresActivity.getPuntoDeInteresActual());
         viewPager.setAdapter(pagerAdapter);
+        viewPager.setClipToPadding(false);
+        //viewPager.setPadding(50,0,50,0);
+        //viewPager.setPageMargin(10);
+        CircleIndicator indicator = (CircleIndicator) vista.findViewById(R.id.indicator);
+        indicator.setViewPager(viewPager);
+        pagerAdapter.registerDataSetObserver(indicator.getDataSetObserver());
         TextView tv = vista.findViewById(R.id.nombre_sitio);
         tv.setText(PuntoDeInteresActivity.getPuntoDeInteresActual().getNombre());
+
 
         Log.d(Constantes.TAG_APP, "Pager Adapter Asociado");
 

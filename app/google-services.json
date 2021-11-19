@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "928182822913",
+    "firebase_url": "https://appturismorivasdatabase.firebaseio.com",
+    "project_id": "appturismorivasdatabase",
+    "storage_bucket": "appturismorivasdatabase.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:928182822913:android:9fc9b329fd8d95d6",
+        "android_client_info": {
+          "package_name": "com.turismorivas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "928182822913-dv6ed3bidsvodda8vco0u6rga13bk3e2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.turismorivas",
+            "certificate_hash": "5da2b5379447a9970f7d697a48562ada79202db6"
+          }
+        },
+        {
+          "client_id": "928182822913-m74r4tdqv8m8dvq8qobmna0egsa67982.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjeUDVbRbZxyGosfWe14Z0B-qIUh-cv4U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "928182822913-m74r4tdqv8m8dvq8qobmna0egsa67982.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

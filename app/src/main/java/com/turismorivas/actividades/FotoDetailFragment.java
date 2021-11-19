@@ -1,8 +1,9 @@
 package com.turismorivas.actividades;
 
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.turismorivas.R;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 
 /**
@@ -21,7 +26,7 @@ import com.turismorivas.R;
  */
 public class FotoDetailFragment extends Fragment {
 
-    private int id_drawable;
+    private String path_foto;
 
     /**
      *
@@ -31,7 +36,8 @@ public class FotoDetailFragment extends Fragment {
     public void setArguments(Bundle args) {
         super.setArguments(args);
         Log.d(getClass().getCanonicalName(), "SetArgumentsInvocado");
-        id_drawable = args.getInt("N_FOTO");
+        //byte[] byteArray = args.getByteArray("N_FOTO");
+       // id_drawable= BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
     }
 
     public FotoDetailFragment() {
@@ -46,8 +52,9 @@ public class FotoDetailFragment extends Fragment {
         try {
 
             ImageView imageView = rootView.findViewById(R.id.foto_actual);
-            Drawable drawable = getResources().getDrawable(this.id_drawable);
-            imageView.setImageDrawable(drawable);
+
+            //imageView.setImageBitmap(id_drawable);
+            imageView.setImageBitmap(loadImageFromStorage(path_foto));
 
         }catch (Exception e)
         {
@@ -56,5 +63,24 @@ public class FotoDetailFragment extends Fragment {
 
 
         return rootView;
+    }
+
+    public void setPath_foto(String path_foto) {
+        this.path_foto = path_foto;
+    }
+
+    private Bitmap loadImageFromStorage(String path)
+    {
+        Bitmap b=null;
+        try {
+            File f=new File(path);
+            b = BitmapFactory.decodeStream(new FileInputStream(f));
+
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+return b;
     }
 }

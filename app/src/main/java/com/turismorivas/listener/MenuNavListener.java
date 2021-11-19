@@ -1,8 +1,10 @@
 package com.turismorivas.listener;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView;
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.material.navigation.NavigationView;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -42,20 +44,27 @@ public class MenuNavListener implements NavigationView.OnNavigationItemSelectedL
 
 
         String menu = item.getTitle().toString();
-        int npi = item.getOrder();//obtengo el número del punto de interés
 
-        Log.d(getClass().getCanonicalName(), "Ha tocado la opción " + menu + " " +npi);
+
 
         MapaActivity activity = (MapaActivity) context;
-        if (npi<16) {
-            activity.visitaPuntoDeInteres(npi);
-        } else {
-            if (npi>=16&&npi<19){
-            activity.cambiarTipoMapa(npi);}
-            else{
-                activity.contacto();
-            }
 
+        switch (menu){
+            case "@historiaderivas":
+                activity.contacto();
+                break;
+            case "Híbrido":
+                activity.cambiarTipoMapa(GoogleMap.MAP_TYPE_HYBRID);
+                break;
+            case "Normal":
+                activity.cambiarTipoMapa(GoogleMap.MAP_TYPE_NORMAL);
+                break;
+            case "Satélite":
+                activity.cambiarTipoMapa(GoogleMap.MAP_TYPE_SATELLITE);
+                break;
+                default:
+                    activity.visitaPuntoDeInteres(menu);
+                    break;
         }
 
 
